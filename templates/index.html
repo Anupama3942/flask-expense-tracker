@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <h2>Your Expenses</h2>
+
+
+    {% if alert %}
+        <div class="alert alert-warning">{{ alert }}</div>
+    {% endif %}
+
+    <p>Total Spent: ₹{{ total_spent }}</p>
+
+    {% if budget %}
+        <p>Budget: ₹{{ budget.amount }}</p>
+    {% endif %}
+
+    <!-- Visual Analytics -->
+    <h3>Spending by Category</h3>
+    <canvas id="categoryChart" class="chart-size"></canvas>
+
+    <script>
+        const ctx = document.getElementById('categoryChart').getContext('2d');
+        const categories = {{ categories|tojson|safe }};
+        const isDarkTheme = document.body.getAttribute('data-theme') === 'dark';
+        const textColor = isDarkTheme ? '#e0e0e0' : '#333';
+
+        const chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(categories),
+                datasets: [{
+                    label: 'Amount Spent',
+                    data: Object.values(categories),
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+                    ]
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: textColor,
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: isDarkTheme ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)',
+                        bodyColor: textColor,
+                        titleColor: textColor,
+                        borderColor: isDarkTheme ? '#e0e0e0' : '#333',
+                        borderWidth: 1
+                    }
+                }
+            }
+        });
+    </script>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Amount</th>
+                <th>Category</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expenses %}
+                <tr>
+                    <td>₹{{ expense.amount }}</td>
+                    <td>{{ expense.category }}</td>
+                    <td>{{ expense.date }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

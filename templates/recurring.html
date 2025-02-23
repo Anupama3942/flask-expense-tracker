@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Recurring Expenses</h2>
+
+    <form method="POST">
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" name="amount" step="0.01" required>
+
+        <label for="category">Category:</label>
+        <input type="text" id="category" name="category" required>
+
+        <label for="frequency">Frequency:</label>
+        <select id="frequency" name="frequency" required>
+            <option value="Daily">Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Monthly">Monthly</option>
+            <option value="Yearly">Yearly</option>
+        </select>
+
+        <label for="next_due_date">Next Due Date:</label>
+        <input type="date" id="next_due_date" name="next_due_date" required>
+
+        <button type="submit">Add Recurring Expense</button>
+    </form>
+
+    <h3>Existing Recurring Expenses</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Amount</th>
+                <th>Category</th>
+                <th>Frequency</th>
+                <th>Next Due Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in recurring_expenses %}
+                <tr>
+                    <td>₹{{ expense.amount }}</td>
+                    <td>{{ expense.category }}</td>
+                    <td>{{ expense.frequency }}</td>
+                    <td>{{ expense.next_due_date }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

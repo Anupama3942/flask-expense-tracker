@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <h2>Yearly Spending</h2>
+
+    {% for year, categories in yearly_data.items() %}
+        <h3>{{ year }}</h3>
+
+        <!-- Table for yearly spending -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category, amount in categories.items() %}
+                    <tr>
+                        <td>{{ category }}</td>
+                        <td>₹{{ amount }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Chart for yearly spending -->
+        <canvas id="yearlyChart{{ year }}" class="chart-size"></canvas>
+    {% endfor %}
+
+    <!-- Chart.js script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            {% for year, categories in yearly_data.items() %}
+                const ctx{{ year }} = document.getElementById('yearlyChart{{ year }}').getContext('2d');
+                const categories{{ year }} = {{ categories.keys() | list | tojson | safe }};
+                const amounts{{ year }} = {{ categories.values() | list | tojson | safe }};
+
+                const isDarkTheme = document.body.getAttribute('data-theme') === 'dark';
+                const textColor = isDarkTheme ? '#e0e0e0' : '#333'; // Light text for dark theme, dark text for light theme
+                const gridColor = isDarkTheme ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'; // Grid lines color
+                const axisColor = isDarkTheme ? '#e0e0e0' : '#333'; // Axis lines color
+
+                new Chart(ctx{{ year }}, {
+                    type: 'bar', // You can change this to 'pie', 'line', etc.
+                    data: {
+                        labels: categories{{ year }},
+                        datasets: [{
+                            label: 'Amount Spent',
+                            data: amounts{{ year }},
+                            backgroundColor: [
+                                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+                            ],
+                            borderColor: [
+                                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: textColor, // Set legend text color
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: isDarkTheme ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)', // Tooltip background
+                                bodyColor: textColor, // Tooltip text color
+                                titleColor: textColor, // Tooltip title color
+                                borderColor: axisColor, // Tooltip border color
+                                borderWidth: 1
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: textColor, // Set y-axis text color
+                                },
+                                grid: {
+                                    color: gridColor, // Set y-axis grid lines color
+                                },
+                                border: {
+                                    color: axisColor, // Set y-axis line color
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: textColor, // Set x-axis text color
+                                },
+                                grid: {
+                                    color: gridColor, // Set x-axis grid lines color
+                                },
+                                border: {
+                                    color: axisColor, // Set x-axis line color
+                                }
+                            }
+                        }
+                    }
+                });
+            {% endfor %}
+        });
+    </script>
+
+{% endblock %}

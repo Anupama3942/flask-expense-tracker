@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Export Expenses</h2>
+    <p>Click the button below to download your expense data as an Excel file.</p>
+    <a href="{{ url_for('export') }}" class="export-button">Export to Excel</a>
+{% endblock %}

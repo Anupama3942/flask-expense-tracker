@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Monthly Spending by Category</h2>
+    
+    <!-- Month Selector -->
+    <form method="GET" action="{{ url_for('monthly_spending') }}">
+        <label for="month">Select Month:</label>
+        <input type="month" id="month" name="month" value="{{ selected_month }}"><br><br>
+        <button type="submit">View</button>
+    </form>
+
+    <!-- Display Data for Selected Month -->
+    {% if selected_month %}
+        <h3>Spending for {{ selected_month }}</h3>
+        <p>Total Spending: ₹{{ monthly_data.values()|sum }}</p>
+        <p>Budget: ₹{{ budget.amount if budget else 'Not set' }}</p>
+        <p>Remaining Budget: ₹{{ (budget.amount - monthly_data.values()|sum) if budget else 'N/A' }}</p>
+
+        <!-- Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category, amount in monthly_data.items() %}
+                    <tr>
+                        <td>{{ category }}</td>
+                        <td>₹{{ amount }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a href="{{ url_for('export_monthly_spending', month=selected_month) }}" class="export-button">Export as CSV</a>
+
+        <!-- Pie Chart -->
+        <canvas id="monthlySpendingChart" class="chart-size"></canvas>
+        <script>
+            const categories = {{ monthly_data.keys()|list|tojson|safe }};
+            const amounts = {{ monthly_data.values()|list|tojson|safe }};
+
+            const ctx = document.getElementById('monthlySpendingChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        label: 'Amount Spent',
+                        data: amounts,
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+                        ]
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: document.body.getAttribute('data-theme') === 'dark' ? '#e0e0e0' : '#333',
+                            }
+                        },
+                        tooltip: {
+                            bodyColor: document.body.getAttribute('data-theme') === 'dark' ? '#e0e0e0' : '#333',
+                            titleColor: document.body.getAttribute('data-theme') === 'dark' ? '#e0e0e0' : '#333',
+                        }
+                    }
+                }
+            });
+        </script>
+    {% endif %}
+{% endblock %}

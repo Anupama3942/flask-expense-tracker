@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <!-- Hamburger menu for mobile -->
+        <div class="hamburger" onclick="toggleNav()">
+            <i class="fas fa-bars"></i> <!-- Hamburger icon -->
+        </div>
+        <h1>Expense Tracker</h1>
+        <button class="theme-toggle">
+            <i class="fas fa-sun"></i> <!-- Light mode icon -->
+            <i class="fas fa-moon" style="display: none;"></i> <!-- Dark mode icon -->
+        </button>
+        <nav>
+            <!-- Navigation links -->
+            <div class="nav-links" id="navLinks">
+                <a href="{{ url_for('home') }}">Home</a>
+                <a href="{{ url_for('add_expense') }}">Add Expense</a>
+                <a href="{{ url_for('set_budget') }}">Set Budget</a>
+                <a href="{{ url_for('recurring') }}">Recurring Expenses</a>
+                <a href="{{ url_for('monthly_spending') }}">Monthly Spending</a>
+                <a href="{{ url_for('yearly_spending') }}">Yearly Spending</a>
+                <a href="{{ url_for('export') }}">Export</a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Login</a>
+                    <a href="{{ url_for('register') }}">Register</a>
+                {% endif %}
+            </div>
+        </nav>
+        <!-- Overlay to close the menu when clicking outside -->
+        <div class="overlay" id="overlay" onclick="closeNav()"></div>
+    </header>
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script>
+        // Function to toggle the navigation links on mobile
+        function toggleNav() {
+            const navLinks = document.getElementById('navLinks');
+            const overlay = document.getElementById('overlay');
+            navLinks.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        // Function to close the navigation menu
+        function closeNav() {
+            const navLinks = document.getElementById('navLinks');
+            const overlay = document.getElementById('overlay');
+            navLinks.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+    </script>
+</body>
+</html>
