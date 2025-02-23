@@ -225,8 +225,8 @@ p {
 /* Toggle Button */
 .theme-toggle {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    top: 80px;
+    right: 10px;
     padding: 10px;
     background-color: var(--button-background);
     color: white;
@@ -337,6 +337,8 @@ nav {
     background-color: rgba(12, 12, 12, 0.762);
     z-index: 999;
 }
+
+
 
 /* Media Queries for Mobile Navigation */
 @media (max-width: 768px) {
@@ -449,7 +451,7 @@ nav {
     }
 
     .theme-toggle {
-        top: 5px;
+        top: 20px;
         right: 5px;
         width: 25px;
         height: 25px;
