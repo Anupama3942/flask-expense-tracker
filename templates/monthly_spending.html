@@ -13,9 +13,9 @@
     <!-- Display Data for Selected Month -->
     {% if selected_month %}
         <h3>Spending for {{ selected_month }}</h3>
-        <p>Total Spending: ₹{{ monthly_data.values()|sum }}</p>
-        <p>Budget: ₹{{ budget.amount if budget else 'Not set' }}</p>
-        <p>Remaining Budget: ₹{{ (budget.amount - monthly_data.values()|sum) if budget else 'N/A' }}</p>
+        <p>Total Spending: Rs.{{ monthly_data.values()|sum }}</p>
+        <p>Budget: Rs.{{ budget.amount if budget else 'Not set' }}</p>
+        <p>Remaining Budget: Rs.{{ (budget.amount - monthly_data.values()|sum) if budget else 'N/A' }}</p>
 
         <!-- Table -->
         <table>
