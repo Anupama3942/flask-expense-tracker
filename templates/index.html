@@ -9,10 +9,10 @@
         <div class="alert alert-warning">{{ alert }}</div>
     {% endif %}
 
-    <p>Total Spent: ₹{{ total_spent }}</p>
+    <p>Total Spent: Rs.{{ total_spent }}</p>
 
     {% if budget %}
-        <p>Budget: ₹{{ budget.amount }}</p>
+        <p>Budget: Rs.{{ budget.amount }}</p>
     {% endif %}
 
     <!-- Visual Analytics -->
@@ -67,7 +67,7 @@
         <tbody>
             {% for expense in expenses %}
                 <tr>
-                    <td>₹{{ expense.amount }}</td>
+                    <td>Rs.{{ expense.amount }}</td>
                     <td>{{ expense.category }}</td>
                     <td>{{ expense.date }}</td>
                 </tr>
