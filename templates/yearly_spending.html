@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
     <h2>Yearly Spending</h2>
 
     {% for year, categories in yearly_data.items() %}
@@ -19,7 +18,7 @@
                 {% for category, amount in categories.items() %}
                     <tr>
                         <td>{{ category }}</td>
-                        <td>₹{{ amount }}</td>
+                        <td>Rs.{{ amount }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -33,17 +32,32 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             {% for year, categories in yearly_data.items() %}
-                const ctx{{ year }} = document.getElementById('yearlyChart{{ year }}').getContext('2d');
+                // Debugging: Check if the canvas element exists
+                const canvas{{ year }} = document.getElementById('yearlyChart{{ year }}');
+                if (!canvas{{ year }}) {
+                    console.error('Canvas element not found for year {{ year }}');
+                    return;
+                }
+
+                const ctx{{ year }} = canvas{{ year }}.getContext('2d');
                 const categories{{ year }} = {{ categories.keys() | list | tojson | safe }};
                 const amounts{{ year }} = {{ categories.values() | list | tojson | safe }};
 
+                // Debugging: Check the data
+                console.log('Year: {{ year }}');
+                console.log('Categories:', categories{{ year }});
+                console.log('Amounts:', amounts{{ year }});
+
+                // Get the current theme
                 const isDarkTheme = document.body.getAttribute('data-theme') === 'dark';
-                const textColor = isDarkTheme ? '#e0e0e0' : '#333'; // Light text for dark theme, dark text for light theme
+
+                // Define colors based on the theme
+                const textColor = isDarkTheme ? '#e0e0e0' : '#333'; // Text color
                 const gridColor = isDarkTheme ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'; // Grid lines color
                 const axisColor = isDarkTheme ? '#e0e0e0' : '#333'; // Axis lines color
 
                 new Chart(ctx{{ year }}, {
-                    type: 'bar', // You can change this to 'pie', 'line', etc.
+                    type: 'bar', // Bar chart
                     data: {
                         labels: categories{{ year }},
                         datasets: [{
@@ -103,5 +117,4 @@
             {% endfor %}
         });
     </script>
-
 {% endblock %}

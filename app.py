@@ -3,8 +3,11 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from datetime import datetime
+from collections import defaultdict
 import pandas as pd
+
 import os  # Added for file handling
+
 
 
 app = Flask(__name__)
@@ -55,20 +58,44 @@ class RecurringExpense(db.Model):
 @app.route('/')
 @login_required
 def home():
-    # Always use the current month
+    # Use the current month for filtering expenses
     current_month = datetime.now().strftime('%Y-%m')
-
-    # Fetch expenses for the current month
     expenses = Expense.query.filter_by(user_id=current_user.id, month=current_month).all()
-    budget = Budget.query.filter_by(user_id=current_user.id).first()
-    total_spent = sum(expense.amount for expense in expenses)
 
-    # Prepare data for analytics
+    # Group expenses by date and category
+    grouped_expenses = defaultdict(lambda: defaultdict(float))
+    for expense in expenses:
+        grouped_expenses[expense.date][expense.category] += expense.amount
+
+    # Convert the grouped data into a list of dictionaries for the template
+    table_data = []
+    for date, categories in grouped_expenses.items():
+        for category, amount in categories.items():
+            table_data.append({'date': date, 'category': category, 'amount': amount})
+
+    # Prepare data for analytics (spending by category)
     categories = {}
     for expense in expenses:
         categories[expense.category] = categories.get(expense.category, 0) + expense.amount
 
-    return render_template('index.html', expenses=expenses, total_spent=total_spent, budget=budget, alert=None, categories=categories)
+    # Fetch the user's budget
+    budget = Budget.query.filter_by(user_id=current_user.id).first()
+
+    # Calculate total spent
+    total_spent = sum(expense.amount for expense in expenses)
+
+    # Check if the budget is exceeded
+    alert = None
+    if budget and total_spent > budget.amount:
+        alert = f'Warning: You have exceeded your budget by Rs.{total_spent - budget.amount:.2f}!'
+
+    return render_template('index.html',
+                           table_data=table_data,
+                           total_spent=total_spent,
+                           budget=budget,
+                           alert=alert,
+                           categories=categories)
+
 
 @app.route('/add_expense', methods=['GET', 'POST'])
 @login_required
@@ -138,17 +165,18 @@ def set_budget():
         amount = float(request.form['amount'])
         budget = Budget.query.filter_by(user_id=current_user.id).first()
         
-        if budget:
-            budget.amount = amount
-        else:
+        if not budget:
             budget = Budget(amount=amount, user_id=current_user.id)
             db.session.add(budget)
-        
+        else:
+            budget.amount = amount
+
         db.session.commit()
         flash('Budget set successfully!', 'success')
         return redirect(url_for('home'))
 
     return render_template('set_budget.html')
+
 
 @app.route('/recurring', methods=['GET', 'POST'])
 @login_required
@@ -180,7 +208,7 @@ def recurring():
 @login_required
 def monthly_spending():
     selected_month = request.args.get('month', datetime.now().strftime('%Y-%m'))
-    
+
     # Fetch expenses for the selected month
     expenses = Expense.query.filter_by(user_id=current_user.id, month=selected_month).all()
 
@@ -191,7 +219,25 @@ def monthly_spending():
         amount = expense.amount
         monthly_data[category] = monthly_data.get(category, 0) + amount
 
-    return render_template('monthly_spending.html', monthly_data=monthly_data, selected_month=selected_month)
+    # Fetch the user's budget
+    budget = Budget.query.filter_by(user_id=current_user.id).first()
+
+    # Calculate total spending for the selected month
+    total_spent = sum(expense.amount for expense in expenses)
+
+    # Calculate remaining budget
+    remaining_budget = None
+    if budget:
+        remaining_budget = budget.amount - total_spent
+
+    return render_template(
+        'monthly_spending.html',
+        monthly_data=monthly_data,
+        selected_month=selected_month,
+        total_spent=total_spent,
+        budget=budget,  # Pass the budget to the template
+        remaining_budget=remaining_budget  # Pass the remaining budget to the template
+    )
 
 @app.route('/yearly_spending')
 @login_required
@@ -211,6 +257,9 @@ def yearly_spending():
         if category not in yearly_data[year]:
             yearly_data[year][category] = 0
         yearly_data[year][category] += amount
+
+    # Debugging: Print yearly_data to verify its structure
+    print(yearly_data)
 
     return render_template('yearly_spending.html', yearly_data=yearly_data)
 
@@ -256,4 +305,4 @@ def logout():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=False)
+    app.run(debug=True)

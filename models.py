@@ -14,13 +14,14 @@ class User(db.Model, UserMixin):
     expenses = db.relationship('Expense', backref='user', lazy=True)
     budgets = db.relationship('Budget', backref='user', lazy=True)
     recurring_expenses = db.relationship('RecurringExpense', backref='user', lazy=True)
+    goals = db.relationship('Goal', backref='user', lazy=True)
 
 # Expense Model
 class Expense(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     amount = db.Column(db.Float, nullable=False)
     category = db.Column(db.String(100), nullable=False)
-    date = db.Column(db.String(100), nullable=False)  # Ensure this field exists
+    date = db.Column(db.String(100), nullable=False)  # Consider using a Date type if possible
     month = db.Column(db.String(7), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
@@ -37,17 +38,12 @@ class RecurringExpense(db.Model):
     amount = db.Column(db.Float, nullable=False)
     category = db.Column(db.String(100), nullable=False)
     frequency = db.Column(db.String(50), nullable=False)
-    next_due_date = db.Column(db.String(100), nullable=False)
+    next_due_date = db.Column(db.String(100), nullable=False)  # Consider using a Date type if possible
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    
-class Budget(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    monthly_amount = db.Column(db.Float, nullable=False)
-    yearly_amount = db.Column(db.Float, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    
+
+# Goal Model
 class Goal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String(100), nullable=False)
     target_amount = db.Column(db.Float, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)   
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

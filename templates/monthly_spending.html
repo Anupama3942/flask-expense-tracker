@@ -2,7 +2,7 @@
 
 {% block content %}
     <h2>Monthly Spending by Category</h2>
-    
+
     <!-- Month Selector -->
     <form method="GET" action="{{ url_for('monthly_spending') }}">
         <label for="month">Select Month:</label>
@@ -13,9 +13,16 @@
     <!-- Display Data for Selected Month -->
     {% if selected_month %}
         <h3>Spending for {{ selected_month }}</h3>
-        <p>Total Spending: Rs.{{ monthly_data.values()|sum }}</p>
-        <p>Budget: Rs.{{ budget.amount if budget else 'Not set' }}</p>
-        <p>Remaining Budget: Rs.{{ (budget.amount - monthly_data.values()|sum) if budget else 'N/A' }}</p>
+        <p>Total Spending: Rs.{{ total_spent }}</p>
+
+        <!-- Display Budget Information -->
+        {% if budget %}
+            <p>Budget: Rs.{{ budget.amount }}</p>
+            <p>Remaining Budget: Rs.{{ remaining_budget }}</p>
+        {% else %}
+            <p>Budget: Not set</p>
+            <p>Remaining Budget: N/A</p>
+        {% endif %}
 
         <!-- Table -->
         <table>
@@ -29,21 +36,25 @@
                 {% for category, amount in monthly_data.items() %}
                     <tr>
                         <td>{{ category }}</td>
-                        <td>₹{{ amount }}</td>
+                        <td>Rs.{{ amount }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
 
+        <!-- Export Button -->
         <a href="{{ url_for('export_monthly_spending', month=selected_month) }}" class="export-button">Export as CSV</a>
 
         <!-- Pie Chart -->
         <canvas id="monthlySpendingChart" class="chart-size"></canvas>
+
         <script>
             const categories = {{ monthly_data.keys()|list|tojson|safe }};
             const amounts = {{ monthly_data.values()|list|tojson|safe }};
-
             const ctx = document.getElementById('monthlySpendingChart').getContext('2d');
+            const isDarkTheme = document.body.getAttribute('data-theme') === 'dark';
+            const textColor = isDarkTheme ? '#e0e0e0' : '#333';
+
             const chart = new Chart(ctx, {
                 type: 'pie',
                 data: {
@@ -60,12 +71,15 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: document.body.getAttribute('data-theme') === 'dark' ? '#e0e0e0' : '#333',
+                                color: textColor,
                             }
                         },
                         tooltip: {
-                            bodyColor: document.body.getAttribute('data-theme') === 'dark' ? '#e0e0e0' : '#333',
-                            titleColor: document.body.getAttribute('data-theme') === 'dark' ? '#e0e0e0' : '#333',
+                            backgroundColor: isDarkTheme ? 'rgba(255, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.8)',
+                            bodyColor: textColor,
+                            titleColor: textColor,
+                            borderColor: isDarkTheme ? '#e0e0e0' : '#333',
+                            borderWidth: 1
                         }
                     }
                 }
